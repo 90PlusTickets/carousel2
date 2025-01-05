@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel z CSV</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            overflow: hidden;
+        }
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-item {
+            flex: 0 0 33.33%;
+            text-align: center;
+            position: relative;
+        }
+        .carousel-item img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .carousel-item .name, .carousel-item .price {
+            margin: 5px 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel" id="carousel">
+            <!-- Dynamicky načtené produkty -->
+        </div>
+    </div>
+
+    <script>
+        const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZYOrdYoKkHtjhCJ-T-APC2uoRFpe4afpPZ9AzB8fC_dNmdPfGZcCfwrdLBvHfc_R-QUt75MVEc-sG/pubhtml; 
+
+        async function loadProducts() {
+            const response = await fetch(csvURL);
+            const csvText = await response.text();
+            const rows = csvText.split("\n").map(row => row.split(","));
+            const products = rows.slice(1).map(row => ({
+                name: row[0],
+                price: row[1],
+                image: row[2],
+                url: row[3],
+            }));
+
+            renderCarousel(products);
+        }
+
+        function renderCarousel(products) {
+            const carouselElement = document.getElementById("carousel");
+            products.forEach(product => {
+                const item = document.createElement("div");
+                item.classList.add("carousel-item");
+                item.innerHTML = `
+                    <a href="${product.url}" target="_blank">
+                        <img src="${product.image}" alt="${product.name}">
+                    </a>
+                    <div class="name">${product.name}</div>
+                    <div class="price">${product.price}</div>
+                `;
+                carouselElement.appendChild(item);
+            });
+
+            // Automatický pohyb carouselu
+            let currentIndex = 0;
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % products.length;
+                carouselElement.style.transform = `translateX(-${currentIndex * 33.33}%)`;
+            }, 3000);
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>
